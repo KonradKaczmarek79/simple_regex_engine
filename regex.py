@@ -16,9 +16,23 @@ def check_single_sing(regular_expression: str, text: str) -> bool:
     )
     return any(points_to_check)
 
-try:
-    regex, text_to_check = input().split("|")
-except ValueError:
-    pass
-else:
-    print(check_single_sing(regex, text_to_check))
+def check_sequence(regular_expression: str, text: str) -> bool:
+    if len(regular_expression) != len(text) and len(regular_expression) != 0:
+        return False
+    if regular_expression == text:
+        return True
+    else:
+        results = []
+        for rex, char in zip(regular_expression, text):
+            results.append(check_single_sing(rex, char))
+        return all(results)
+
+
+if __name__ == '__main__':
+
+    try:
+        regex, text_to_check = input().split("|")
+    except ValueError:
+        pass
+    else:
+        print(check_sequence(regex, text_to_check))
