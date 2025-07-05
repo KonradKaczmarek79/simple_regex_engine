@@ -16,6 +16,7 @@ def check_single_sing(regular_expression: str, text: str) -> bool:
     )
     return any(points_to_check)
 
+
 def check_sequence(regular_expression: str, text: str) -> bool:
     if len(regular_expression) != len(text) and len(regular_expression) != 0:
         return False
@@ -28,6 +29,25 @@ def check_sequence(regular_expression: str, text: str) -> bool:
         return all(results)
 
 
+def check_subsequence(regular_expression: str, text: str) -> bool:
+
+    result = False
+    if len(regular_expression) == len(text):
+        return check_sequence(regular_expression, text)
+    else:
+        start_point = 0
+        end_point = len(regular_expression)
+        while end_point < len(text) + 1:
+
+            result = check_single_sing(regular_expression, text[start_point:end_point])
+            if result:
+                break
+            start_point += 1
+            end_point += 1
+
+    return result
+
+
 if __name__ == '__main__':
 
     try:
@@ -35,4 +55,4 @@ if __name__ == '__main__':
     except ValueError:
         pass
     else:
-        print(check_sequence(regex, text_to_check))
+        print(check_subsequence(regex, text_to_check))
