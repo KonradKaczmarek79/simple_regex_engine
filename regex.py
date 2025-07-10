@@ -32,14 +32,28 @@ def check_sequence(regular_expression: str, text: str) -> bool:
 def check_subsequence(regular_expression: str, text: str) -> bool:
 
     result = False
-    if len(regular_expression) == len(text):
+    if (
+            not regular_expression or
+            (len(regular_expression) == len(text) and regular_expression[0] != "^" and regular_expression[-1] != "$")
+        ):
+        return check_sequence(regular_expression, text)
+    elif regular_expression[0] == "^" or regular_expression[-1] == "$":
+
+        if regular_expression[0] == "^":
+            regular_expression = regular_expression[1:]            
+            text = text[:len(regular_expression)]
+        if regular_expression[-1] == "$":
+            regular_expression = regular_expression[:-1]
+            text = text[-len(regular_expression):]
         return check_sequence(regular_expression, text)
     else:
+        # check if text contains the passed regex (it can be shorter than text then)
         start_point = 0
+
         end_point = len(regular_expression)
         while end_point < len(text) + 1:
 
-            result = check_single_sing(regular_expression, text[start_point:end_point])
+            result = check_sequence(regular_expression, text[start_point:end_point])
             if result:
                 break
             start_point += 1
