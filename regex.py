@@ -1,72 +1,77 @@
-"""The task requires that not to use the re module for completing this project. """
+class RegularExpression:
+    """ A class to represent a regular expression
 
-def check_single_sing(regular_expression: str, text: str) -> bool:
+    Attributes:
+        BEGINNING: a symbol specifying the required starting character of the text
+        ENDING: a symbol specifying the required ending character of the text
     """
-    Check if a regular expression matches a single singular string.
-    :param regular_expression: The regular expression to check (dot, blank or the same character).
-    :param text: The text to check.
-    :return: True if the regular expression matches a single singular string, the . matches single char.
-    Blank means no expression to check so return True.
-    False otherwise.
-    """
-    points_to_check = (
-        (regular_expression == text) and (len(regular_expression) == len(text)),
-        (len(regular_expression) == 0),
-        (regular_expression == ".")
-    )
-    return any(points_to_check)
+
+    BEGINNING = "^"
+    ENDING = "$"
+
+    def __init__(self, pattern, text_to_check):
+        self.pattern = pattern
+        self.text_to_check = text_to_check
 
 
-def check_sequence(regular_expression: str, text: str) -> bool:
-    if len(regular_expression) != len(text) and len(regular_expression) != 0:
-        return False
-    if regular_expression == text:
-        return True
-    else:
-        results = []
-        for rex, char in zip(regular_expression, text):
-            results.append(check_single_sing(rex, char))
-        return all(results)
+    def same_text_or_blank(self):
+        return (len(self.pattern) == len(self.text_to_check)) \
+            and self.pattern == self.text_to_check \
+            or (len(self.pattern) == 0)
 
 
-def check_subsequence(regular_expression: str, text: str) -> bool:
+    @staticmethod
+    def check_single_sign(sign_re, sign_text):
 
-    result = False
-    if (
-            not regular_expression or
-            (len(regular_expression) == len(text) and regular_expression[0] != "^" and regular_expression[-1] != "$")
-        ):
-        return check_sequence(regular_expression, text)
-    elif regular_expression[0] == "^" or regular_expression[-1] == "$":
+        points_to_check = (
+            (sign_re == sign_text),
+            (sign_re == ".")
+        )
 
-        if regular_expression[0] == "^":
-            regular_expression = regular_expression[1:]            
-            text = text[:len(regular_expression)]
-        if regular_expression[-1] == "$":
-            regular_expression = regular_expression[:-1]
-            text = text[-len(regular_expression):]
-        return check_sequence(regular_expression, text)
-    else:
-        # check if text contains the passed regex (it can be shorter than text then)
-        start_point = 0
-
-        end_point = len(regular_expression)
-        while end_point < len(text) + 1:
-
-            result = check_sequence(regular_expression, text[start_point:end_point])
-            if result:
-                break
-            start_point += 1
-            end_point += 1
-
-    return result
+        return any(points_to_check)
 
 
-if __name__ == '__main__':
+    def check_beginning(self):
+        if self.pattern.startswith(self.BEGINNING) and len(self.pattern) > 1:
+            if check_single_sign(self.pattern[1], self.text_to_check[0]):
+                self.pattern = self.pattern[2:]
+                self.text_to_check = self.text_to_check[1:]
 
-    try:
-        regex, text_to_check = input().split("|")
-    except ValueError:
-        pass
-    else:
-        print(check_subsequence(regex, text_to_check))
+
+    def check_ending(self):
+        if self.pattern.endswith(self.ENDING) and len(self.pattern) > 1:
+            if check_single_sign(self.pattern[-2], self.text_to_check[-1]):
+                self.pattern = self.pattern[:-2]
+                self.text_to_check = self.text_to_check[:-1]
+
+
+    def compare_with_pattern(self):
+        result = []
+
+        self.check_beginning()
+        self.check_ending()
+
+        # check if the same text or no pattern passed
+        if self.same_text_or_blank():
+            result.append(True)
+
+        # check if pattern is substring of text to check
+        elif len(self.pattern) < len(self.text_to_check):
+            start_point = 0
+            end_point = len(self.pattern)
+            while end_point <= len(self.text_to_check):
+                result = []
+                for re_letter, txt_letter in zip(self.pattern, self.text_to_check[start_point:end_point]):
+                    result.append(RegularExpression.check_single_sign(re_letter, txt_letter))
+                if all(result):
+                    return True
+
+                start_point += 1
+                end_point += 1
+        else:
+            try:
+                for re_letter, txt_letter in zip(self.pattern, self.text_to_check, strict=True):
+                    result.append(RegularExpression.check_single_sign(re_letter, txt_letter))
+            except ValueError:
+                result.append(False)
+        return all(result)
